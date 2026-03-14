@@ -1,0 +1,7 @@
+[
+  { "zone_id": "z1", "zone_name": "Entry Zone", "zone_type": "hero", "sq_ft": 400 },
+  { "zone_id": "z2", "zone_name": "Left Aisle — Laundry", "zone_type": "aisle", "sq_ft": 600 },
+  { "zone_id": "z3", "zone_name": "Centre — Kitchen", "zone_type": "aisle", "sq_ft": 580 },
+  { "zone_id": "z4", "zone_name": "Right Aisle — Value", "zone_type": "aisle", "sq_ft": 500 },
+  { "zone_id": "z5", "zone_name": "Back Zone", "zone_type": "back", "sq_ft": 420 }
+]
