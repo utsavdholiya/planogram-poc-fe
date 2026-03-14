@@ -47,7 +47,7 @@ export default function StoreCanvas({
         groups[sku.cat_id] = { cat_id: sku.cat_id, cat_name: sku.cat_name || sku.cat_id, skus: [], totalFloorSpace: 0 }
       }
       groups[sku.cat_id].skus.push(sku)
-      groups[sku.cat_id].totalFloorSpace += sku.floor_space || 0
+      groups[sku.cat_id].totalFloorSpace += Number(sku.floor_space) || 0
     })
     return Object.values(groups).sort((a, b) => b.skus.length - a.skus.length)
   }, [skus])

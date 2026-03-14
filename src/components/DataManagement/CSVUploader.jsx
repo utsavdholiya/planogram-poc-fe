@@ -1,15 +1,11 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import Papa from 'papaparse';
-import { uploadOrders } from '../../services/api';
+import { uploadOrders, getSKUs } from '../../services/api';
 import sampleOrdersRaw from '../../data/sample_orders.csv?raw';
-import skus from '../../data/skus.json';
 
 const REQUIRED_COLUMNS = ['bill_no', 'date', 'store_id', 'cat_id', 'sku_id', 'units_sold'];
 
-const validSkuIds = new Set(skus.map((s) => s.sku_id));
-const validCatIds = new Set(skus.map((s) => s.cat_id));
-
-function validateRow(row, index) {
+function validateRow(row, index, validSkuIds, validCatIds) {
   const errors = [];
 
   REQUIRED_COLUMNS.forEach((col) => {
@@ -18,11 +14,11 @@ function validateRow(row, index) {
     }
   });
 
-  if (row.sku_id && !validSkuIds.has(row.sku_id.trim())) {
+  if (row.sku_id && validSkuIds.size > 0 && !validSkuIds.has(row.sku_id.trim())) {
     errors.push(`Unknown sku_id "${row.sku_id}"`);
   }
 
-  if (row.cat_id && !validCatIds.has(row.cat_id.trim())) {
+  if (row.cat_id && validCatIds.size > 0 && !validCatIds.has(row.cat_id.trim())) {
     errors.push(`Unknown cat_id "${row.cat_id}"`);
   }
 
@@ -51,6 +47,18 @@ export default function CSVUploader({ storeId, onUploadSuccess }) {
   const [uploadResult, setUploadResult] = useState(null);
   const [uploadError, setUploadError] = useState('');
   const fileInputRef = useRef(null);
+  const [validSkuIds, setValidSkuIds] = useState(new Set());
+  const [validCatIds, setValidCatIds] = useState(new Set());
+
+  useEffect(() => {
+    getSKUs()
+      .then(res => {
+        const list = Array.isArray(res.data) ? res.data : [];
+        setValidSkuIds(new Set(list.map(s => s.sku_id)));
+        setValidCatIds(new Set(list.map(s => s.cat_id)));
+      })
+      .catch(() => {});
+  }, []);
 
   const resetState = useCallback(() => {
     setParsedData(null);
@@ -103,7 +111,7 @@ export default function CSVUploader({ storeId, onUploadSuccess }) {
           setParsedData(data);
 
           const errors = data
-            .map((row, idx) => validateRow(row, idx))
+            .map((row, idx) => validateRow(row, idx, validSkuIds, validCatIds))
             .filter(Boolean);
           setValidationErrors(errors);
         },

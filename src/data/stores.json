@@ -1,5 +1,0 @@
-[
-  { "store_id": "store_001", "store_name": "Surat Central", "city": "Surat", "state": "Gujarat", "sq_ft": 2500, "template": "medium" },
-  { "store_id": "store_002", "store_name": "Ahmedabad Main", "city": "Ahmedabad", "state": "Gujarat", "sq_ft": 5000, "template": "large" },
-  { "store_id": "store_003", "store_name": "Baroda Express", "city": "Vadodara", "state": "Gujarat", "sq_ft": 1000, "template": "small" }
-]

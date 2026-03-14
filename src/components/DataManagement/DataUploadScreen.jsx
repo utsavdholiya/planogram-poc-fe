@@ -122,7 +122,7 @@ function FootfallSection({ storeId, footfallData, setFootfallData, loadingFootfa
       // Refresh footfall list
       const response = await getFootfall(storeId);
       const data = response.data;
-      setFootfallData(Array.isArray(data) ? data : data.entries || []);
+      setFootfallData(Array.isArray(data) ? data : data.footfall || []);
 
       resetForm();
       setShowForm(false);
@@ -178,10 +178,10 @@ function FootfallSection({ storeId, footfallData, setFootfallData, loadingFootfa
                 {footfallData.map((entry, idx) => (
                   <tr key={entry.id || idx} className="hover:bg-gray-50 transition-colors">
                     <td className="px-4 py-2 text-gray-900 whitespace-nowrap">
-                      {formatDate(entry.week_start)}
+                      {formatDate(entry.week_start || entry.SK)}
                     </td>
                     <td className="px-4 py-2 text-right text-gray-900 tabular-nums whitespace-nowrap">
-                      {entry.weekly_count?.toLocaleString() ?? '--'}
+                      {Number(entry.weekly_count)?.toLocaleString() ?? '--'}
                     </td>
                     <td className="px-4 py-2 text-gray-600 whitespace-nowrap">
                       {entry.entered_by || '--'}
@@ -328,7 +328,7 @@ export default function DataUploadScreen({ storeId, onContinue }) {
     try {
       const response = await getFootfall(storeId);
       const data = response.data;
-      setFootfallData(Array.isArray(data) ? data : data.entries || []);
+      setFootfallData(Array.isArray(data) ? data : data.footfall || []);
     } catch {
       setFootfallData([]);
     } finally {

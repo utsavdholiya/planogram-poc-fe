@@ -4,15 +4,23 @@ import KPICards from '../components/Dashboard/KPICards'
 import SKUTable from '../components/Dashboard/SKUTable'
 import RationaleTable from '../components/Dashboard/RationaleTable'
 import ScenarioCompare from '../components/Dashboard/ScenarioCompare'
-import { getSavedPlanograms, savePlanogram } from '../services/api'
+import { getSavedPlanograms, savePlanogram, getSKUs } from '../services/api'
 import { useAdjacencyAlerts } from '../hooks/useAdjacencyAlerts'
-import skusData from '../data/skus.json'
 
 export default function DashboardPage() {
   const location = useLocation()
   const navigate = useNavigate()
-  const { scores, explanations, layout, derivedParams, config } = location.state || {}
+  const { scores, explanations, layout, derivedParams, config, skus: routeSkus } = location.state || {}
   const [savedLayouts, setSavedLayouts] = useState([])
+  const [skusData, setSkusData] = useState(routeSkus || [])
+
+  useEffect(() => {
+    if (!routeSkus || routeSkus.length === 0) {
+      getSKUs()
+        .then(res => setSkusData(Array.isArray(res.data) ? res.data : []))
+        .catch(() => {})
+    }
+  }, [routeSkus])
 
   const alerts = useAdjacencyAlerts(layout, skusData, derivedParams)
 

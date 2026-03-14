@@ -28,6 +28,7 @@ export default function ExportModal({
   onClose,
 }) {
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false)
+  const [isGeneratingPNG, setIsGeneratingPNG] = useState(false)
   const [copied, setCopied] = useState(false)
   const printRef = useRef(null)
 
@@ -101,6 +102,31 @@ export default function ExportModal({
     }
   }, [storeName])
 
+  const handleExportPNG = useCallback(async () => {
+    if (!printRef.current) return
+    setIsGeneratingPNG(true)
+
+    try {
+      const canvas = await html2canvas(printRef.current, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+      })
+
+      const link = document.createElement('a')
+      link.download = `planogram_${storeName.replace(/\s+/g, '_').toLowerCase()}_${formatDate(new Date()).replace(/\s+/g, '_')}.png`
+      link.href = canvas.toDataURL('image/png')
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    } catch (err) {
+      console.error('PNG generation failed:', err)
+    } finally {
+      setIsGeneratingPNG(false)
+    }
+  }, [storeName])
+
   const handleCopyShareLink = useCallback(() => {
     try {
       const payload = JSON.stringify({
@@ -138,7 +164,7 @@ export default function ExportModal({
         <div className="px-6 pt-6 pb-4 border-b border-gray-100">
           <h2 className="text-xl font-bold text-gray-900">Export Planogram</h2>
           <p className="mt-1 text-sm text-gray-500">
-            Download as PDF or share a link to this layout
+            Download as PDF, PNG, or share a link to this layout
           </p>
         </div>
 
@@ -163,6 +189,29 @@ export default function ExportModal({
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
                 </svg>
                 Export PDF
+              </>
+            )}
+          </button>
+
+          <button
+            onClick={handleExportPNG}
+            disabled={isGeneratingPNG}
+            className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {isGeneratingPNG ? (
+              <>
+                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                Generating PNG...
+              </>
+            ) : (
+              <>
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" />
+                </svg>
+                Export PNG
               </>
             )}
           </button>

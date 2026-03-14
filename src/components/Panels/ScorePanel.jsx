@@ -16,14 +16,12 @@ const dimensionColors = {
   conversion: { bar: "bg-blue-500", text: "text-blue-600" },
   margin: { bar: "bg-emerald-500", text: "text-emerald-600" },
   experience: { bar: "bg-violet-500", text: "text-violet-600" },
-  brand_visibility: { bar: "bg-orange-500", text: "text-orange-600" },
 };
 
 const dimensionLabels = {
   conversion: "Conversion",
   margin: "Margin",
   experience: "CX Flow",
-  brand_visibility: "Brand",
 };
 
 function SubScoreBar({ label, value, weight, colorKey }) {
@@ -191,12 +189,6 @@ export default function ScorePanel({ scores, derivedParams, config }) {
           value={scores.experience}
           weight={weights.experience}
           colorKey="experience"
-        />
-        <SubScoreBar
-          label={dimensionLabels.brand_visibility}
-          value={scores.brand_visibility}
-          weight={weights.brand_visibility}
-          colorKey="brand_visibility"
         />
       </div>
 

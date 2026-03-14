@@ -1,14 +1,13 @@
-import { useState, useMemo, useCallback } from 'react';
-import { submitManualOrders } from '../../services/api';
-import skus from '../../data/skus.json';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { submitManualOrders, getSKUs } from '../../services/api';
 
-function buildCategoryMap() {
+function buildCategoryMap(skuList) {
   const map = {};
-  skus.forEach((sku) => {
+  skuList.forEach((sku) => {
     if (!map[sku.cat_id]) {
       map[sku.cat_id] = {
         cat_id: sku.cat_id,
-        category: sku.category,
+        category: sku.category || sku.cat_id,
         skus: [],
       };
     }
@@ -16,11 +15,6 @@ function buildCategoryMap() {
   });
   return map;
 }
-
-const CATEGORY_MAP = buildCategoryMap();
-const CATEGORIES = Object.values(CATEGORY_MAP).sort((a, b) =>
-  a.category.localeCompare(b.category)
-);
 
 function todayString() {
   return new Date().toISOString().split('T')[0];
@@ -33,12 +27,25 @@ const EMPTY_ROW = {
 };
 
 export default function ManualEntryForm({ storeId, onSubmitSuccess }) {
+  const [skus, setSkus] = useState([]);
   const [billNo, setBillNo] = useState('');
   const [date, setDate] = useState(todayString());
   const [rows, setRows] = useState([{ ...EMPTY_ROW }]);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [submitResult, setSubmitResult] = useState(null);
+
+  useEffect(() => {
+    getSKUs()
+      .then(res => setSkus(Array.isArray(res.data) ? res.data : []))
+      .catch(() => {});
+  }, []);
+
+  const CATEGORY_MAP = useMemo(() => buildCategoryMap(skus), [skus]);
+  const CATEGORIES = useMemo(
+    () => Object.values(CATEGORY_MAP).sort((a, b) => a.category.localeCompare(b.category)),
+    [CATEGORY_MAP]
+  );
 
   const updateRow = useCallback((index, field, value) => {
     setRows((prev) => {
