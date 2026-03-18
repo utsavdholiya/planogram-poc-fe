@@ -8,7 +8,7 @@ const ZONE_TYPE_STYLES = {
   back: { bg: 'bg-slate-600', label: 'Back' },
 }
 
-export default function ZoneCell({ zone, skuIds, skus, onSKUClick }) {
+export default function ZoneCell({ zone, skuIds, skus, derivedParams, onSKUClick }) {
   const { setNodeRef, isOver } = useDroppable({ id: zone.zone_id })
 
   const skuMap = Object.fromEntries(skus.map((s) => [s.sku_id, s]))
@@ -84,6 +84,7 @@ export default function ZoneCell({ zone, skuIds, skus, onSKUClick }) {
               key={sku.sku_id}
               sku={sku}
               isInHeroZone={isHero}
+              convRate={derivedParams?.conversion_rates?.[sku.cat_id]}
               onClick={onSKUClick}
             />
           ))}

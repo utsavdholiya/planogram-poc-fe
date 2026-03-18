@@ -21,6 +21,7 @@ export function usePlanogram() {
   }, [])
 
   const buildBeforeLayout = useCallback((zones, skus) => {
+    if (!zones || zones.length === 0 || !skus || skus.length === 0) return {}
     const before = {}
     zones.forEach(z => { before[z.zone_id] = [] })
     const sortedZones = [...zones].sort((a, b) => {

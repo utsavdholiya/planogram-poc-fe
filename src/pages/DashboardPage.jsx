@@ -40,7 +40,6 @@ export default function DashboardPage() {
         layout_name: name,
         season: config.season,
         business_objective: config.business_objective,
-        campaign: config.campaign,
         priority_skus: config.priority_skus,
         layout_data: layout,
         scores,

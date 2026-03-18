@@ -25,7 +25,10 @@ const dimensionLabels = {
 };
 
 function SubScoreBar({ label, value, weight, colorKey }) {
-  const colors = dimensionColors[colorKey] || { bar: "bg-gray-400", text: "text-gray-600" };
+  const colors = dimensionColors[colorKey] || {
+    bar: "bg-gray-400",
+    text: "text-gray-600",
+  };
   const clamped = Math.max(0, Math.min(100, value ?? 0));
 
   return (
@@ -34,10 +37,14 @@ function SubScoreBar({ label, value, weight, colorKey }) {
         <span className="text-sm font-medium text-gray-700">
           {label}
           {weight != null && (
-            <span className="ml-1 text-xs text-gray-400 font-normal">w{weight}</span>
+            <span className="ml-1 text-xs text-gray-400 font-normal">
+              w{weight}
+            </span>
           )}
         </span>
-        <span className={`text-sm font-semibold ${colors.text}`}>{value ?? "—"}</span>
+        <span className={`text-sm font-semibold ${colors.text}`}>
+          {value ?? "—"}
+        </span>
       </div>
       <div className="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden">
         <div
@@ -60,14 +67,19 @@ function ScoreTrace({ traces }) {
         onClick={() => setOpen((prev) => !prev)}
         className="w-full flex items-center justify-between px-4 py-2.5 bg-gray-50 hover:bg-gray-100 transition-colors text-sm font-medium text-gray-700"
       >
-        <span>Score Trace ({traces.length})</span>
+        {/* <span>Score Trace ({traces.length})</span> */}
         <svg
           className={`w-4 h-4 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
         >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 9l-7 7-7-7"
+          />
         </svg>
       </button>
       {open && (
@@ -75,14 +87,21 @@ function ScoreTrace({ traces }) {
           {traces.map((t, i) => {
             const isPositive = (t.delta ?? 0) >= 0;
             return (
-              <div key={i} className="px-4 py-2 text-xs font-mono flex flex-wrap gap-x-3 gap-y-0.5 items-baseline">
-                <span className={`font-bold ${isPositive ? "text-green-600" : "text-red-600"}`}>
+              <div
+                key={i}
+                className="px-4 py-2 text-xs font-mono flex flex-wrap gap-x-3 gap-y-0.5 items-baseline"
+              >
+                <span
+                  className={`font-bold ${isPositive ? "text-green-600" : "text-red-600"}`}
+                >
                   {isPositive ? "+" : ""}
                   {t.delta}
                 </span>
                 <span className="text-gray-500">{t.dim}</span>
                 <span className="text-gray-700 font-semibold">{t.rule}</span>
-                <span className="text-gray-400">{t.sku || t.pair || t.zone || ""}</span>
+                <span className="text-gray-400">
+                  {t.sku || t.pair || t.zone || ""}
+                </span>
                 <span className="text-gray-500 break-all">{t.data}</span>
               </div>
             );
@@ -101,11 +120,40 @@ function ScoringCriteria({ criteria }) {
   const rows = [
     { label: "Objective", value: criteria.objective },
     { label: "Season", value: criteria.season },
+    {
+      label: "Analysis Method",
+      value: criteria.ml_trained
+        ? "Purchase patterns + Seasonal trends + Sales prediction"
+        : null,
+    },
+    { label: "Last Analysed", value: criteria.ml_trained_at || null },
     { label: "Base Conv Score", value: criteria.base_conv_score },
-    { label: "Avg Conv Rate", value: criteria.avg_conv_rate_pct != null ? `${criteria.avg_conv_rate_pct}%` : null },
-    { label: "Avg Margin", value: criteria.avg_margin_pct != null ? `${criteria.avg_margin_pct}%` : null },
-    { label: "High Margin Threshold", value: criteria.high_margin_threshold != null ? `${criteria.high_margin_threshold}%` : null },
-    { label: "Low Margin Threshold", value: criteria.low_margin_threshold != null ? `${criteria.low_margin_threshold}%` : null },
+    {
+      label: "Avg Conv Rate",
+      value:
+        criteria.avg_conv_rate_pct != null
+          ? `${criteria.avg_conv_rate_pct}%`
+          : null,
+    },
+    {
+      label: "Avg Margin",
+      value:
+        criteria.avg_margin_pct != null ? `${criteria.avg_margin_pct}%` : null,
+    },
+    {
+      label: "High Margin Threshold",
+      value:
+        criteria.high_margin_threshold != null
+          ? `${criteria.high_margin_threshold}%`
+          : null,
+    },
+    {
+      label: "Low Margin Threshold",
+      value:
+        criteria.low_margin_threshold != null
+          ? `${criteria.low_margin_threshold}%`
+          : null,
+    },
     { label: "Avg SKU Footprint", value: criteria.avg_sku_footprint },
     { label: "Hero Conv Bonus", value: criteria.hero_conv_bonus },
     { label: "Bills Analysed", value: criteria.bills_analysed },
@@ -125,7 +173,12 @@ function ScoringCriteria({ criteria }) {
           stroke="currentColor"
           viewBox="0 0 24 24"
         >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 9l-7 7-7-7"
+          />
         </svg>
       </button>
       {open && (
@@ -137,7 +190,7 @@ function ScoringCriteria({ criteria }) {
                   <span className="text-gray-500">{r.label}</span>
                   <span className="text-gray-800 font-medium">{r.value}</span>
                 </div>
-              )
+              ),
           )}
         </div>
       )}
@@ -163,11 +216,13 @@ export default function ScorePanel({ scores, derivedParams, config }) {
     <div className="p-4 bg-white rounded-xl shadow-sm border border-gray-200 space-y-5">
       {/* Overall Score */}
       <div className="text-center">
-        <div className={`text-5xl font-extrabold tabular-nums ${overallColor(overall)}`}>
+        {/* <div
+          className={`text-5xl font-extrabold tabular-nums ${overallColor(overall)}`}
+        >
           {Math.round(overall)}
-        </div>
-        <div className="mt-1 text-xs text-gray-400 uppercase tracking-wide">Overall Score</div>
-        <div className={`mx-auto mt-2 h-1.5 w-24 rounded-full ${overallBg(overall)} opacity-40`} />
+        </div> */}
+        {/* <div className="mt-1 text-xs text-gray-400 uppercase tracking-wide">Overall Score</div>
+        <div className={`mx-auto mt-2 h-1.5 w-24 rounded-full ${overallBg(overall)} opacity-40`} /> */}
       </div>
 
       {/* Sub-score Bars */}
@@ -193,7 +248,7 @@ export default function ScorePanel({ scores, derivedParams, config }) {
       </div>
 
       {/* Score Trace */}
-      <ScoreTrace traces={scores.score_trace} />
+      {/* <ScoreTrace traces={scores.score_trace} /> */}
 
       {/* Scoring Criteria */}
       <ScoringCriteria criteria={scores.scoring_criteria} />

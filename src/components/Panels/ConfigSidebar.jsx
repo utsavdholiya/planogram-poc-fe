@@ -3,9 +3,7 @@ import { useState, useMemo } from 'react'
 const SEASON_OPTIONS = [
   { value: 'summer', label: 'Summer' },
   { value: 'monsoon', label: 'Monsoon' },
-  { value: 'festive', label: 'Festive' },
   { value: 'winter', label: 'Winter' },
-  { value: 'neutral', label: 'Neutral' },
 ]
 
 const OBJECTIVE_OPTIONS = [
@@ -14,19 +12,11 @@ const OBJECTIVE_OPTIONS = [
   { value: 'balanced', label: 'Balanced' },
 ]
 
-const TIER_STYLES = {
-  premium: { bg: 'bg-purple-100', text: 'text-purple-700', label: 'Premium' },
-  mid: { bg: 'bg-blue-100', text: 'text-blue-700', label: 'Mid' },
-  budget: { bg: 'bg-gray-100', text: 'text-gray-600', label: 'Budget' },
-}
-
 function detectSeason() {
-  const month = new Date().getMonth()
-  if (month >= 3 && month <= 6) return 'summer'
-  if (month >= 7 && month <= 8) return 'monsoon'
-  if (month === 9) return 'festive'
-  if (month >= 10 || month <= 1) return 'winter'
-  return 'neutral'
+  const month = new Date().getMonth() // 0-indexed
+  if (month >= 2 && month <= 5) return 'summer'    // Mar-Jun
+  if (month >= 6 && month <= 9) return 'monsoon'    // Jul-Oct
+  return 'winter'                                    // Nov-Feb
 }
 
 export default function ConfigSidebar({
@@ -42,7 +32,6 @@ export default function ConfigSidebar({
   const [objective, setObjective] = useState('balanced')
   const [season, setSeason] = useState(detectedSeason)
   const [prioritySKUs, setPrioritySKUs] = useState([])
-  const [campaign, setCampaign] = useState('')
   const [expandedCategories, setExpandedCategories] = useState({})
   const [loadingPhase, setLoadingPhase] = useState('calculating')
 
@@ -77,7 +66,6 @@ export default function ConfigSidebar({
       store_id: selectedStore,
       business_objective: objective,
       season,
-      campaign: campaign.trim() || null,
       priority_skus: prioritySKUs,
     })
     return () => clearTimeout(timer)
@@ -163,21 +151,6 @@ export default function ConfigSidebar({
           )}
         </div>
 
-        {/* Campaign */}
-        <div>
-          <label className="block text-xs font-medium text-gray-600 mb-1">
-            Campaign <span className="text-gray-400 font-normal">(opt)</span>
-          </label>
-          <input
-            type="text"
-            value={campaign}
-            onChange={e => setCampaign(e.target.value)}
-            disabled={isLoading}
-            placeholder="e.g. Summer Sale"
-            className="w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm placeholder:text-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 disabled:opacity-50"
-          />
-        </div>
-
         {/* Priority SKUs */}
         <div>
           <label className="block text-xs font-medium text-gray-600 mb-1">
@@ -220,7 +193,6 @@ export default function ConfigSidebar({
                     {isExpanded && (
                       <div className="px-2 pb-1.5 space-y-0.5">
                         {catSKUs.map(sku => {
-                          const tier = TIER_STYLES[sku.price_tier] || TIER_STYLES.budget
                           const isChecked = prioritySKUs.includes(sku.sku_id)
                           return (
                             <label
@@ -237,9 +209,6 @@ export default function ConfigSidebar({
                                 className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-3 w-3"
                               />
                               <span className="text-gray-800 flex-1 truncate">{sku.sku_name}</span>
-                              <span className={`shrink-0 text-[9px] font-semibold px-1 py-0.5 rounded ${tier.bg} ${tier.text}`}>
-                                {tier.label}
-                              </span>
                             </label>
                           )
                         })}

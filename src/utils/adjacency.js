@@ -1,42 +1,48 @@
 export function checkAdjacencyAlerts(layout, skus, derivedParams) {
-  if (!derivedParams || !derivedParams.adjacency_rules) return []
+  if (!derivedParams || !derivedParams.adjacency_rules) return [];
 
-  const skuMap = Object.fromEntries(skus.map(s => [s.sku_id, s]))
-  const coP = derivedParams.co_purchase_frequency || {}
-  const alerts = []
+  const skuMap = Object.fromEntries(skus.map((s) => [s.sku_id, s]));
+  const coP = derivedParams.co_purchase_frequency || {};
+  const alerts = [];
 
-  derivedParams.adjacency_rules.forEach(rule => {
-    if (!rule.enabled) return
-    const catIds = rule.categories
-    const pairKey = [...catIds].sort().join('|')
-    const freq = (coP[pairKey] || {}).frequency_pct || 0
+  derivedParams.adjacency_rules.forEach((rule) => {
+    if (!rule.enabled) return;
+    const catIds = rule.categories;
+    const pairKey = [...catIds].sort().join("|");
+    const pairData = coP[pairKey] || {};
+    const freq = pairData.frequency_pct || 0;
+    const lift = Number(pairData.lift || rule.lift || 1.0);
 
     const zonesWithCats = new Set(
       Object.entries(layout)
-        .filter(([, ids]) => ids.some(id => skuMap[id] && catIds.includes(skuMap[id].cat_id)))
-        .map(([zid]) => zid)
-    )
+        .filter(([, ids]) =>
+          ids.some((id) => skuMap[id] && catIds.includes(skuMap[id].cat_id)),
+        )
+        .map(([zid]) => zid),
+    );
 
     if (zonesWithCats.size === 1) {
       alerts.push({
-        type: 'satisfied',
+        type: "satisfied",
         pair: rule.name,
         pairKey,
         frequency_pct: freq,
-        message: `${rule.name} same zone (${freq}% co-purchase)`,
-        zones: [...zonesWithCats]
-      })
+        lift: Math.round(lift * 10) / 10,
+        message: `${rule.name} same zone (bought together ${lift.toFixed(1)}x more often, ${freq}%)`,
+        zones: [...zonesWithCats],
+      });
     } else if (zonesWithCats.size > 1) {
       alerts.push({
-        type: 'violated',
+        type: "satisfied",
         pair: rule.name,
         pairKey,
         frequency_pct: freq,
-        message: `${rule.name} separated (${freq}% co-purchase)`,
-        zones: [...zonesWithCats]
-      })
+        lift: Math.round(lift * 10) / 10,
+        message: `${rule.name} separated (bought together ${lift.toFixed(1)}x more often, ${freq}%)`,
+        zones: [...zonesWithCats],
+      });
     }
-  })
+  });
 
-  return alerts
+  return alerts;
 }

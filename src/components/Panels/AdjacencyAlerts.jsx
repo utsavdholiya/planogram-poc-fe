@@ -21,8 +21,15 @@ function WarningIcon() {
   );
 }
 
+function liftBadgeColor(lift) {
+  if (lift >= 2.0) return "bg-green-300 text-green-800";
+  if (lift > 1.2) return "bg-green-200 text-green-700";
+  return "bg-gray-200 text-gray-500";
+}
+
 function AlertItem({ alert }) {
   const isSatisfied = alert.type === "satisfied";
+  const lift = alert.lift;
 
   return (
     <div
@@ -38,17 +45,24 @@ function AlertItem({ alert }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
           <span className="font-semibold truncate">{alert.pair || "Unknown pair"}</span>
-          {alert.frequency_pct != null && (
-            <span
-              className={`shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded ${
-                isSatisfied
-                  ? "bg-green-200 text-green-700"
-                  : "bg-amber-200 text-amber-700"
-              }`}
-            >
-              {alert.frequency_pct}%
-            </span>
-          )}
+          <div className="flex items-center gap-1.5 shrink-0">
+            {lift != null && (
+              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${liftBadgeColor(lift)}`}>
+                {lift}x more likely bought together
+              </span>
+            )}
+            {alert.frequency_pct != null && (
+              <span
+                className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                  isSatisfied
+                    ? "bg-green-200 text-green-700"
+                    : "bg-amber-200 text-amber-700"
+                }`}
+              >
+                {alert.frequency_pct}%
+              </span>
+            )}
+          </div>
         </div>
         {alert.message && (
           <p className="mt-0.5 text-[11px] opacity-80 leading-snug">{alert.message}</p>

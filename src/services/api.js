@@ -24,6 +24,9 @@ export const getOrdersSummary = (storeId) =>
 export const getOrdersHistory = (storeId) =>
   api.get("/orders/history", { params: { store_id: storeId } });
 
+export const getOrdersAnalytics = (storeId) =>
+  api.get("/orders/analytics", { params: { store_id: storeId } });
+
 // Footfall
 export const submitFootfall = (storeId, weekStart, weeklyCount, enteredBy) =>
   api.post("/footfall", {
@@ -47,6 +50,28 @@ export const savePlanogram = (data) => api.post("/planogram/save", data);
 
 export const getSavedPlanograms = (storeId) =>
   api.get("/planogram/saved", { params: { store_id: storeId } });
+
+// ML Training (uses Function URL to bypass 30s API Gateway timeout)
+const TRAIN_FN_URL = import.meta.env.VITE_TRAIN_FN_URL;
+export const trainModels = (storeId) => {
+  if (TRAIN_FN_URL) {
+    return axios.post(`${TRAIN_FN_URL}ml/train`, { store_id: storeId }, {
+      headers: { "Content-Type": "application/json" },
+      timeout: 300000,
+    });
+  }
+  return api.post("/ml/train", { store_id: storeId });
+};
+
+export const getMLStatus = (storeId) => {
+  if (TRAIN_FN_URL) {
+    return axios.get(`${TRAIN_FN_URL}ml/status`, {
+      params: { store_id: storeId },
+      timeout: 30000,
+    });
+  }
+  return api.get("/ml/status", { params: { store_id: storeId } });
+};
 
 // Admin - Stores
 export const getStores = () => api.get("/admin/stores");

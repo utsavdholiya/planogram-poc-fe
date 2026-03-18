@@ -50,9 +50,7 @@ function DeltaBadge({ delta }) {
   return (
     <span
       className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${
-        isPositive
-          ? "bg-green-100 text-green-700"
-          : "bg-red-100 text-red-600"
+        isPositive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"
       }`}
     >
       {isPositive ? "+" : ""}
@@ -104,14 +102,14 @@ function SavedLayoutCard({ saved, currentOverall }) {
       </div>
 
       {/* Overall Score */}
-      <div className="text-center py-2">
+      {/* <div className="text-center py-2">
         <div className={`text-3xl font-extrabold tabular-nums ${overallColor(overall)}`}>
           {Math.round(overall)}
         </div>
         <div className="text-[10px] text-gray-400 uppercase tracking-wide mt-0.5">
           Overall Score
         </div>
-      </div>
+      </div> */}
 
       {/* Sub-score Bars */}
       <div className="space-y-1.5">
@@ -154,7 +152,11 @@ function SavedLayoutCard({ saved, currentOverall }) {
   );
 }
 
-export default function ScenarioCompare({ savedLayouts, currentScores, onSave }) {
+export default function ScenarioCompare({
+  savedLayouts,
+  currentScores,
+  onSave,
+}) {
   const [saving, setSaving] = useState(false);
 
   const handleSave = () => {
@@ -172,9 +174,7 @@ export default function ScenarioCompare({ savedLayouts, currentScores, onSave })
     <div className="space-y-4">
       {/* Save Button */}
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-bold text-gray-900">
-          Scenario Comparison
-        </h3>
+        <h3 className="text-sm font-bold text-gray-900">Scenario Comparison</h3>
         <button
           onClick={handleSave}
           disabled={saving}

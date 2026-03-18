@@ -72,23 +72,6 @@ export default function SKUDetailPanel({ sku, placementReasons, explanations, on
           <Section title="SKU Info">
             <div className="bg-gray-50 rounded-lg p-3 space-y-0">
               <InfoRow label="Category">{sku.category || "—"}</InfoRow>
-              <InfoRow label="Price Tier">
-                {sku.price_tier ? (
-                  <Badge
-                    className={
-                      sku.price_tier === "premium"
-                        ? "bg-purple-100 text-purple-700"
-                        : sku.price_tier === "mid"
-                        ? "bg-blue-100 text-blue-700"
-                        : "bg-gray-100 text-gray-700"
-                    }
-                  >
-                    {sku.price_tier}
-                  </Badge>
-                ) : (
-                  "—"
-                )}
-              </InfoRow>
               <InfoRow label="Price">
                 {sku.price != null ? `$${Number(sku.price).toFixed(2)}` : "—"}
               </InfoRow>
@@ -96,13 +79,6 @@ export default function SKUDetailPanel({ sku, placementReasons, explanations, on
                 {sku.margin_pct != null ? `${sku.margin_pct}%` : "—"}
               </InfoRow>
               <InfoRow label="Display Type">{sku.display_type || "—"}</InfoRow>
-              <InfoRow label="Campaign">
-                {sku.campaign_tag ? (
-                  <Badge className="bg-amber-100 text-amber-700">{sku.campaign_tag}</Badge>
-                ) : (
-                  "—"
-                )}
-              </InfoRow>
               <InfoRow label="Floor Space">
                 {sku.floor_space != null ? `${sku.floor_space} sqft` : "—"}
               </InfoRow>
@@ -124,6 +100,7 @@ export default function SKUDetailPanel({ sku, placementReasons, explanations, on
                           (avg {placement.avg_conv_rate_pct}%)
                         </span>
                       )}
+                      <Badge className="ml-1.5 bg-purple-100 text-purple-700">AI</Badge>
                     </span>
                   ) : (
                     "—"

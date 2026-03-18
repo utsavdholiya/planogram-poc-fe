@@ -6,6 +6,8 @@ import {
   getOrdersSummary,
   getFootfall,
   submitFootfall,
+  trainModels,
+  getMLStatus,
 } from '../../services/api';
 
 function formatDate(dateStr) {
@@ -282,6 +284,151 @@ function FootfallSection({ storeId, footfallData, setFootfallData, loadingFootfa
   );
 }
 
+// ─── ML Training Section ─────────────────────────────────────────────────────
+
+function MLStatusCard({ label, model, status }) {
+  const trained = status?.trained;
+  return (
+    <div className={`rounded-lg border p-3 ${trained ? 'border-green-200 bg-green-50' : 'border-gray-200 bg-gray-50'}`}>
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-xs font-semibold text-gray-700">{label}</span>
+        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${trained ? 'bg-green-200 text-green-700' : 'bg-gray-200 text-gray-500'}`}>
+          {trained ? 'Complete' : 'Not Run'}
+        </span>
+      </div>
+      <p className="text-[11px] text-gray-500">{model}</p>
+      {trained && status.trained_at && (
+        <p className="text-[10px] text-gray-400 mt-1">
+          {formatDate(status.trained_at)}
+        </p>
+      )}
+      {trained && status.pairs_count != null && (
+        <p className="text-[10px] text-gray-400">{status.pairs_count} pairs</p>
+      )}
+      {trained && status.categories_count != null && (
+        <p className="text-[10px] text-gray-400">{status.categories_count} categories</p>
+      )}
+    </div>
+  );
+}
+
+function MLTrainingSection({ storeId, hasOrders, hasFootfall }) {
+  const [mlStatus, setMlStatus] = useState(null);
+  const [training, setTraining] = useState(false);
+  const [trainError, setTrainError] = useState('');
+  const [trainSuccess, setTrainSuccess] = useState('');
+  const [loadingStatus, setLoadingStatus] = useState(false);
+
+  const fetchMLStatus = useCallback(async () => {
+    if (!storeId) return;
+    setLoadingStatus(true);
+    try {
+      const response = await getMLStatus(storeId);
+      setMlStatus(response.data);
+    } catch {
+      setMlStatus(null);
+    } finally {
+      setLoadingStatus(false);
+    }
+  }, [storeId]);
+
+  useEffect(() => {
+    fetchMLStatus();
+  }, [fetchMLStatus]);
+
+  const handleTrain = useCallback(async () => {
+    setTraining(true);
+    setTrainError('');
+    setTrainSuccess('');
+    try {
+      const response = await trainModels(storeId);
+      const data = response.data;
+      setTrainSuccess(
+        `Analysis complete: ${data.adjacency_pairs} purchase patterns, ` +
+        `${data.seasonal_categories} seasonal trends, ` +
+        `${data.conversion_categories} conversion categories.`
+      );
+      fetchMLStatus();
+    } catch (err) {
+      const message =
+        err.response?.data?.error ||
+        err.response?.data?.detail ||
+        err.message ||
+        'Training failed.';
+      setTrainError(message);
+    } finally {
+      setTraining(false);
+    }
+  }, [storeId, fetchMLStatus]);
+
+  const canTrain = hasOrders && hasFootfall;
+  const allTrained = mlStatus?.adjacency?.trained && mlStatus?.seasonal?.trained && mlStatus?.conversion?.trained;
+
+  return (
+    <div className="space-y-3">
+      {/* Status Cards */}
+      {loadingStatus ? (
+        <div className="flex items-center gap-2 py-4 text-sm text-gray-500">
+          <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+          Loading analysis status...
+        </div>
+      ) : mlStatus ? (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <MLStatusCard label="Adjacency" model="Purchase Pattern Analysis" status={mlStatus.adjacency} />
+          <MLStatusCard label="Seasonal" model="Seasonal Trend Analysis" status={mlStatus.seasonal} />
+          <MLStatusCard label="Conversion" model="Sales Prediction" status={mlStatus.conversion} />
+        </div>
+      ) : (
+        <div className="rounded-md border border-gray-200 bg-gray-50 p-5 text-center">
+          <p className="text-sm text-gray-500">
+            Sales data not analysed. Upload data then run analysis to enable planogram generation.
+          </p>
+        </div>
+      )}
+
+      {/* Success / Error */}
+      {trainSuccess && (
+        <div className="rounded-md border border-green-200 bg-green-50 px-4 py-3">
+          <p className="text-sm text-green-700">{trainSuccess}</p>
+        </div>
+      )}
+      {trainError && (
+        <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3">
+          <p className="text-sm text-red-700">{trainError}</p>
+        </div>
+      )}
+
+      {/* Train Button */}
+      <button
+        type="button"
+        onClick={handleTrain}
+        disabled={!canTrain || training}
+        className="inline-flex items-center gap-2 rounded-md bg-purple-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+      >
+        {training ? (
+          <>
+            <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+            Analysing Sales Data...
+          </>
+        ) : allTrained ? (
+          'Re-analyse Sales Data'
+        ) : (
+          'Analyse Sales Data'
+        )}
+      </button>
+      {!canTrain && (
+        <p className="text-xs text-gray-400">Upload orders and footfall data before running analysis.</p>
+      )}
+    </div>
+  );
+}
+
 // ─── Main Screen ────────────────────────────────────────────────────────────
 
 const TAB_CSV = 'csv';
@@ -351,9 +498,27 @@ export default function DataUploadScreen({ storeId, onContinue }) {
     setHistoryKey((k) => k + 1);
   }, [fetchSummary]);
 
+  // ML status
+  const [mlStatus, setMlStatus] = useState(null);
+
+  const fetchMLStatus = useCallback(async () => {
+    if (!storeId) return;
+    try {
+      const response = await getMLStatus(storeId);
+      setMlStatus(response.data);
+    } catch {
+      setMlStatus(null);
+    }
+  }, [storeId]);
+
+  useEffect(() => {
+    fetchMLStatus();
+  }, [fetchMLStatus]);
+
   const hasOrders = summary && (summary.total_rows > 0 || summary.total_bills > 0);
   const hasFootfall = footfallData.length > 0;
-  const canContinue = hasOrders && hasFootfall;
+  const mlTrained = mlStatus?.adjacency?.trained && mlStatus?.seasonal?.trained && mlStatus?.conversion?.trained;
+  const canContinue = hasOrders && hasFootfall && mlTrained;
 
   const tabs = [
     { key: TAB_CSV, label: 'Upload CSV' },
@@ -414,6 +579,12 @@ export default function DataUploadScreen({ storeId, onContinue }) {
         />
       </div>
 
+      {/* Sales Analysis */}
+      <div>
+        <SectionHeading>Sales Analysis</SectionHeading>
+        <MLTrainingSection storeId={storeId} hasOrders={hasOrders} hasFootfall={hasFootfall} />
+      </div>
+
       {/* Upload History */}
       <div>
         <SectionHeading>Upload History</SectionHeading>
@@ -429,7 +600,11 @@ export default function DataUploadScreen({ storeId, onContinue }) {
                 ? 'Upload orders and add footfall to continue.'
                 : !hasOrders
                 ? 'Upload orders data to continue.'
-                : 'Add footfall data to continue.'}
+                : !hasFootfall
+                ? 'Add footfall data to continue.'
+                : !mlTrained
+                ? 'Run sales analysis to continue.'
+                : 'Complete all steps to continue.'}
             </p>
           )}
           {canContinue && (
